@@ -11,7 +11,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
   background:linear-gradient(145deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);
   color:#f8fafc;min-height:100vh;-webkit-font-smoothing:antialiased}
 .ctr{max-width:1140px;margin:0 auto;padding:12px 12px 40px}
-.hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+
+/* Header */
+.hdr{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .hdr-text{flex:1;min-width:0}
 .hdr h1{font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.3px}
 .hdr h1 span{color:#94a3b8;font-weight:400;font-size:13px;margin-left:6px}
@@ -21,7 +23,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
 .lp button.on{color:#60a5fa;background:rgba(59,130,246,.15)}
 .lp button:not(.on):hover{color:#94a3b8}
 
-/* Selector panel */
+/* Tabs — TOP position */
+.tabs{display:flex;gap:0;margin:8px 0 12px;border-bottom:1px solid rgba(148,163,184,.15);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:9px 12px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;
+  border:none;border-bottom:2.5px solid transparent;transition:all .2s;background:transparent;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.tab:hover{color:#94a3b8}
+.tab.on{color:#60a5fa;border-bottom-color:#3b82f6}
+.panel{display:none}
+.panel.show{display:block}
+
+/* Selector */
 .sel-toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .sel-toggle .b{font-size:11px;padding:5px 10px}
 .sel-count{font-size:11px;color:#64748b}
@@ -48,7 +59,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
 .b.on{border-color:#3b82f6;background:rgba(59,130,246,.15);color:#60a5fa}
 .b.pri{border-color:#3b82f6;background:rgba(59,130,246,.2);color:#60a5fa}
 
-/* Chart card */
+/* Chart */
 .cc{background:rgba(30,41,59,.4);border-radius:12px;border:1px solid rgba(148,163,184,.1);padding:10px;position:relative}
 canvas{display:block;width:100%!important}
 
@@ -64,15 +75,6 @@ canvas{display:block;width:100%!important}
 .ln{font-size:11px;color:#e2e8f0;white-space:nowrap}
 .lv{font-size:10px;color:#64748b;font-family:monospace}
 
-/* Tabs */
-.tabs{display:flex;gap:0;margin-top:14px;border-bottom:1px solid rgba(148,163,184,.12)}
-.tab{padding:10px 14px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;
-  border:none;border-bottom:2px solid transparent;transition:all .2s;background:transparent;font-family:inherit}
-.tab:hover{color:#94a3b8}
-.tab.on{color:#60a5fa;border-bottom-color:#3b82f6}
-.panel{display:none;padding:14px 4px}
-.panel.show{display:block}
-
 /* Analysis */
 .ai{margin-bottom:18px}
 .ai h3{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:5px}
@@ -83,7 +85,7 @@ canvas{display:block;width:100%!important}
 .about .src{color:#64748b;font-size:12px;line-height:1.6}
 .about .src strong{color:#94a3b8}
 
-/* Data table */
+/* Table */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead th{position:sticky;top:0;background:#1e293b;color:#94a3b8;font-weight:600;font-size:11px;
@@ -118,27 +120,33 @@ tbody tr:hover{background:rgba(59,130,246,.05)}
 </head>
 <body>
 <div class="ctr">
+  <!-- 1. Header -->
   <div class="hdr"><div class="hdr-text"><h1 id="pt"></h1><p class="sub" id="ps"></p></div><div class="lp" id="lp"></div></div>
-  <div class="sel-toggle" id="seltog"></div>
-  <div class="sel-panel" id="selpan"></div>
-  <div class="cc" id="ccw"><canvas id="cv"></canvas><div id="tip"></div></div>
-  <div class="lc"><div class="lh" id="lht"></div><div class="lg" id="lgd"></div></div>
+
+  <!-- 2. TABS — immediately after header -->
   <div class="tabs" id="tabs"></div>
-  <div id="p0" class="panel show"></div>
+
+  <!-- 3. Panels -->
+  <!-- Chart panel: contains selector + chart + legend -->
+  <div id="p0" class="panel show">
+    <div class="sel-toggle" id="seltog"></div>
+    <div class="sel-panel" id="selpan"></div>
+    <div class="cc" id="ccw"><canvas id="cv"></canvas><div id="tip"></div></div>
+    <div class="lc"><div class="lh" id="lht"></div><div class="lg" id="lgd"></div></div>
+  </div>
+  <!-- Analysis panel -->
   <div id="p1" class="panel"></div>
+  <!-- Data Table panel -->
   <div id="p2" class="panel"></div>
+  <!-- About panel -->
   <div id="p3" class="panel about"></div>
+
   <div class="ft" id="ftr"></div>
 </div>
 <script>
 (function(){
 "use strict";
 
-/* ═══════════════════════════════════════════════════════════════
-   DATA — ~45 countries, GDP per capita PPP (const 2021 intl $)
-   Source: World Bank WDI NY.GDP.PCAP.PP.KD, IMF WEO
-   Values in thousands. 21 points: 2004-2024.
-   ═══════════════════════════════════════════════════════════════ */
 var YR=[];for(var y=2004;y<=2024;y++)YR.push(y);
 
 var D={
@@ -190,7 +198,6 @@ var D={
 "Hungary":[22,23,24,24.5,25.2,23.5,23.8,24.2,24,25,26.2,27.5,28,29.5,31.2,33,32.5,34,36.5,36,37.5]
 };
 
-/* Country display names in French */
 var FN={
 "Luxembourg":"Luxembourg","Singapore":"Singapour","Ireland":"Irlande","Qatar":"Qatar","Macao":"Macao",
 "Switzerland":"Suisse","Norway":"Norv\u00e8ge","United States":"\u00c9tats-Unis","UAE":"\u00c9mirats arabes unis",
@@ -211,10 +218,8 @@ var PAL=["#E63946","#1D3557","#2A9D8F","#F4A261","#6A0572",
 "#06D6A0","#118AB2","#EF476F","#FFD166","#073B4C",
 "#9B5DE5","#F15BB5","#00BBF9","#00F5D4","#FEE440"];
 
-/* ═══ Groups ═══ */
 var GROUPS={
-  "Top 10":null, /* special: computed */
-  "Top 20":null,
+  "Top 10":null,"Top 20":null,
   "G7":["United States","Canada","United Kingdom","France","Germany","Italy","Japan"],
   "EU-Core":["France","Germany","Italy","Spain","Netherlands","Belgium","Austria","Ireland","Finland","Portugal","Greece","Luxembourg"],
   "Nordics":["Norway","Sweden","Denmark","Finland","Iceland"],
@@ -223,21 +228,17 @@ var GROUPS={
   "East Asia":["China","Japan","South Korea","Taiwan","Hong Kong","Singapore","Macao"],
   "Anglosphere":["United States","United Kingdom","Canada","Australia","New Zealand","Ireland"]
 };
+var GROUPS_FR={"Top 10":"Top 10","Top 20":"Top 20","G7":"G7","EU-Core":"UE-Coeur","Nordics":"Nordiques",
+  "BRICS":"BRICS","Gulf":"Golfe","East Asia":"Asie de l\u2019Est","Anglosphere":"Anglophonie"};
 
-var GROUPS_FR={
-  "Top 10":"Top 10","Top 20":"Top 20","G7":"G7","EU-Core":"UE-Coeur","Nordics":"Nordiques",
-  "BRICS":"BRICS","Gulf":"Golfe","East Asia":"Asie de l\u2019Est","Anglosphere":"Anglophonie"
-};
-
-/* ═══ i18n ═══ */
 var II={
 en:{
 t:"GDP per Capita, PPP",ts:"(const. 2021 intl $)",
 ds:"World Bank WDI (NY.GDP.PCAP.PP.KD), IMF WEO \u2014 2004\u20132024",
 lh:"Click a country to highlight",
 xl:"Year",yl:"GDP per Capita ($k, const. 2021 intl $)",
-tabs:["","Analysis","Data Table","About"],
-selBtn:"Select Countries",hideBtn:"Hide",
+tabs:["\ud83d\udcc8 Chart","\ud83d\udd0d Analysis","\ud83d\udcca Data Table","\u2139\ufe0f About"],
+selBtn:"Select Countries",hideBtn:"Hide Selector",
 selCount:" selected",clearAll:"Clear All",
 dl:"Definition",
 dt:"GDP per capita based on purchasing power parity (PPP), expressed in constant 2021 international dollars. PPP conversion factors account for price-level differences across countries; constant prices adjust for inflation over time.",
@@ -251,7 +252,7 @@ a:[
 ["Ireland\u2019s \u2018leprechaun economics\u2019","Ireland\u2019s leap around 2015 reflects multinationals reclassifying IP assets through Irish subsidiaries, inflating GDP. Ireland created GNI* as an alternative."],
 ["Macao\u2019s COVID collapse","Macao, dependent on casinos, saw GDP per capita fall from $100k+ to ~$30k during pandemic lockdowns."],
 ["Taiwan\u2019s steady ascent","Taiwan nearly doubled from ~$36k to ~$70k, driven by TSMC and diversified tech exports."],
-["France in context","France at ~$50k sits solidly mid-pack among Western European peers \u2014 above Spain and Italy, below Germany and the Nordics. Growth has been steady but modest."],
+["France in context","France at ~$50k sits solidly mid-pack among Western European peers \u2014 above Spain and Italy, below Germany and the Nordics. Growth has been steady but modest, reflecting a mature service-based economy with strong social spending."],
 ["US pulling ahead","The U.S. at ~$76k has accelerated past European peers post-2020, driven by the tech sector and productivity growth."]
 ],
 an:"GDP per capita (PPP) is a useful but imperfect proxy for living standards.",
@@ -263,7 +264,7 @@ t:"PIB par habitant (PPA)",ts:"($ intl const. 2021)",
 ds:"Banque mondiale IDM (NY.GDP.PCAP.PP.KD), FMI PEM \u2014 2004\u20132024",
 lh:"Cliquez sur un pays pour le mettre en surbrillance",
 xl:"Ann\u00e9e",yl:"PIB/hab. ($k, intl const. 2021)",
-tabs:["","Analyse","Tableau","\u00c0 propos"],
+tabs:["\ud83d\udcc8 Graphique","\ud83d\udd0d Analyse","\ud83d\udcca Tableau","\u2139\ufe0f \u00c0 propos"],
 selBtn:"S\u00e9lectionner des pays",hideBtn:"Masquer",
 selCount:" s\u00e9lectionn\u00e9(s)",clearAll:"Tout effacer",
 dl:"D\u00e9finition",
@@ -278,7 +279,7 @@ a:[
 ["La \u00ab leprechaun economics \u00bb de l\u2019Irlande","Le bond de l\u2019Irlande vers 2015 refl\u00e8te la reclassification d\u2019actifs par les multinationales. L\u2019Irlande a cr\u00e9\u00e9 le RNB* comme alternative."],
 ["L\u2019effondrement de Macao","Macao, d\u00e9pendant des casinos, a vu son PIB/hab. passer de 100 000+ $ \u00e0 ~30 000 $ pendant la pand\u00e9mie."],
 ["L\u2019ascension de Ta\u00efwan","Ta\u00efwan a presque doubl\u00e9, de ~36 000 $ \u00e0 ~70 000 $, port\u00e9 par TSMC et les exportations tech."],
-["La France en contexte","La France \u00e0 ~50 000 $ se situe solidement au milieu des pays europ\u00e9ens \u2014 au-dessus de l\u2019Espagne et de l\u2019Italie, en dessous de l\u2019Allemagne et des pays nordiques. Croissance r\u00e9guli\u00e8re mais modeste."],
+["La France en contexte","La France \u00e0 ~50 000 $ se situe solidement au milieu des pays europ\u00e9ens \u2014 au-dessus de l\u2019Espagne et de l\u2019Italie, en dessous de l\u2019Allemagne et des pays nordiques. Croissance r\u00e9guli\u00e8re mais modeste, refl\u00e9tant une \u00e9conomie de services mature avec d\u2019importants d\u00e9penses sociales."],
 ["Les \u00c9tats-Unis se d\u00e9tachent","Les \u00c9.-U. \u00e0 ~76 000 $ ont acc\u00e9l\u00e9r\u00e9 par rapport \u00e0 l\u2019Europe apr\u00e8s 2020, port\u00e9s par la tech et la productivit\u00e9."]
 ],
 an:"Le PIB par habitant (PPA) est un indicateur utile mais imparfait du niveau de vie.",
@@ -287,111 +288,91 @@ tblCountry:"Pays",tblGrowth:"Croissance",tblLatest:"Dernier"
 }
 };
 
-/* ═══ STATE ═══ */
+/* State */
 var lang="en",hiC=null,activeTab=0,selOpen=false,activeGroup=null;
-var AK=Object.keys(D);
-AK.sort(function(a,b){return D[b][20]-D[a][20]});
-
-/* Top N computed */
+var AK=Object.keys(D);AK.sort(function(a,b){return D[b][20]-D[a][20]});
 function topN(n){return AK.slice(0,n)}
-
-/* Selected countries */
 var selected=topN(10).slice();
-
 function dn(c){return lang==="fr"?(FN[c]||c):c}
+function getColorMap(){var m={};selected.forEach(function(c,i){m[c]=PAL[i%PAL.length]});return m}
 
-/* Assign colors dynamically to selected */
-function getColorMap(){
-  var m={};
-  selected.forEach(function(c,i){m[c]=PAL[i%PAL.length]});
-  return m;
-}
-
-/* ═══ CANVAS CHART ═══ */
+/* Canvas */
 var cv=document.getElementById("cv"),ctx=cv.getContext("2d"),tip=document.getElementById("tip");
 var dpr=window.devicePixelRatio||1;
-var PAD={t:16,r:10,b:44,l:52};
+var CPAD={t:16,r:10,b:44,l:52};
 var pw,ph,cw,ch;
 
 function resize(){
-  var box=cv.parentElement;
-  var mob=window.innerWidth<640;
-  var h=mob?320:480;
-  cw=box.clientWidth-20; ch=h;
-  cv.width=cw*dpr; cv.height=ch*dpr;
-  cv.style.width=cw+"px"; cv.style.height=ch+"px";
+  var box=cv.parentElement;var mob=window.innerWidth<640;var h=mob?320:480;
+  cw=box.clientWidth-20;ch=h;
+  cv.width=cw*dpr;cv.height=ch*dpr;
+  cv.style.width=cw+"px";cv.style.height=ch+"px";
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  pw=cw-PAD.l-PAD.r; ph=ch-PAD.t-PAD.b;
+  pw=cw-CPAD.l-CPAD.r;ph=ch-CPAD.t-CPAD.b;
 }
 
 function drawChart(){
-  resize();
-  var cm=getColorMap(),t=II[lang];
+  resize();var cm=getColorMap(),t=II[lang];
   if(!selected.length){ctx.clearRect(0,0,cw,ch);ctx.fillStyle="#64748b";ctx.font="14px -apple-system,sans-serif";ctx.textAlign="center";ctx.fillText(lang==="en"?"Select countries to display":"S\u00e9lectionnez des pays",cw/2,ch/2);cv._meta=null;return}
   var yMin=1e9,yMax=0;
   selected.forEach(function(c){D[c].forEach(function(v){if(v<yMin)yMin=v;if(v>yMax)yMax=v})});
-  var range=yMax-yMin; if(range<10){yMin-=5;yMax+=5}
-  yMin=Math.max(0,Math.floor(yMin/5)*5); yMax=Math.ceil(yMax/5)*5+2;
+  var rng=yMax-yMin;if(rng<10){yMin-=5;yMax+=5}
+  yMin=Math.max(0,Math.floor(yMin/5)*5);yMax=Math.ceil(yMax/5)*5+2;
   ctx.clearRect(0,0,cw,ch);
-  var yStep=Math.max(5,Math.round((yMax-yMin)/8/5)*5);if(yStep===0)yStep=5;
-  ctx.textAlign="right"; ctx.textBaseline="middle"; ctx.font="10px -apple-system,sans-serif";
+  var yStep=Math.max(5,Math.round((yMax-yMin)/8/5)*5);if(!yStep)yStep=5;
+  ctx.textAlign="right";ctx.textBaseline="middle";ctx.font="10px -apple-system,sans-serif";
   for(var v=yMin;v<=yMax;v+=yStep){
-    var py=PAD.t+ph-(v-yMin)/(yMax-yMin)*ph;
-    ctx.strokeStyle="rgba(148,163,184,0.07)"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(PAD.l,py); ctx.lineTo(PAD.l+pw,py); ctx.stroke();
-    ctx.fillStyle="#94a3b8"; ctx.fillText("$"+v+"k",PAD.l-5,py);
+    var py=CPAD.t+ph-(v-yMin)/(yMax-yMin)*ph;
+    ctx.strokeStyle="rgba(148,163,184,0.07)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(CPAD.l,py);ctx.lineTo(CPAD.l+pw,py);ctx.stroke();
+    ctx.fillStyle="#94a3b8";ctx.fillText("$"+v+"k",CPAD.l-5,py);
   }
   var mob=window.innerWidth<640;
-  ctx.textAlign="center"; ctx.textBaseline="top"; ctx.font="10px -apple-system,sans-serif";
+  ctx.textAlign="center";ctx.textBaseline="top";ctx.font="10px -apple-system,sans-serif";
   YR.forEach(function(yr,i){
     if(mob&&i%4!==0)return;if(!mob&&i%2!==0&&i!==YR.length-1)return;
-    var px=PAD.l+i/(YR.length-1)*pw;
-    ctx.fillStyle="#94a3b8"; ctx.fillText(yr,px,ch-PAD.b+6);
+    var px=CPAD.l+i/(YR.length-1)*pw;
+    ctx.fillStyle="#94a3b8";ctx.fillText(yr,px,ch-CPAD.b+6);
   });
-  ctx.fillStyle="#64748b"; ctx.font="11px -apple-system,sans-serif";
-  ctx.textAlign="center"; ctx.fillText(t.xl,PAD.l+pw/2,ch-4);
-  if(!mob){ctx.save();ctx.translate(12,PAD.t+ph/2);ctx.rotate(-Math.PI/2);ctx.font="10px -apple-system,sans-serif";ctx.fillText(t.yl,0,0);ctx.restore()}
+  ctx.fillStyle="#64748b";ctx.font="11px -apple-system,sans-serif";
+  ctx.textAlign="center";ctx.fillText(t.xl,CPAD.l+pw/2,ch-4);
+  if(!mob){ctx.save();ctx.translate(12,CPAD.t+ph/2);ctx.rotate(-Math.PI/2);ctx.font="10px -apple-system,sans-serif";ctx.fillText(t.yl,0,0);ctx.restore()}
   selected.forEach(function(c){
     var isHi=hiC===c,isDim=hiC&&!isHi;
     ctx.strokeStyle=isDim?cm[c]+"28":cm[c];
     ctx.lineWidth=isHi?3.5:isDim?1:2;
-    ctx.lineJoin="round"; ctx.lineCap="round"; ctx.beginPath();
+    ctx.lineJoin="round";ctx.lineCap="round";ctx.beginPath();
     D[c].forEach(function(v,i){
-      var px=PAD.l+i/(YR.length-1)*pw;
-      var py=PAD.t+ph-(v-yMin)/(yMax-yMin)*ph;
+      var px=CPAD.l+i/(YR.length-1)*pw,py=CPAD.t+ph-(v-yMin)/(yMax-yMin)*ph;
       i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
-    });
-    ctx.stroke();
+    });ctx.stroke();
   });
   cv._meta={cs:selected.slice(),cm:cm,yMin:yMin,yMax:yMax};
 }
 
-/* Tooltip */
 function showTip(e){
-  var m=cv._meta; if(!m||!m.cs.length)return;
-  var rect=cv.getBoundingClientRect();
-  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
-  var xi=Math.round((mx-PAD.l)/pw*(YR.length-1));
+  var m=cv._meta;if(!m||!m.cs.length)return;
+  var rect=cv.getBoundingClientRect();var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  var xi=Math.round((mx-CPAD.l)/pw*(YR.length-1));
   if(xi<0||xi>=YR.length){tip.style.display="none";return}
-  var entries=[];
-  m.cs.forEach(function(c){entries.push({c:c,v:D[c][xi],col:m.cm[c]})});
+  var entries=[];m.cs.forEach(function(c){entries.push({c:c,v:D[c][xi],col:m.cm[c]})});
   entries.sort(function(a,b){return b.v-a.v});
   var h='<div class="th">'+YR[xi]+'</div>';
-  entries.forEach(function(e){h+='<div class="tr"><div class="td" style="background:'+e.col+'"></div><span class="tn">'+dn(e.c)+'</span><span class="tv">$'+e.v.toFixed(1)+'k</span></div>'});
-  tip.innerHTML=h; tip.style.display="block";
+  entries.forEach(function(x){h+='<div class="tr"><div class="td" style="background:'+x.col+'"></div><span class="tn">'+dn(x.c)+'</span><span class="tv">$'+x.v.toFixed(1)+'k</span></div>'});
+  tip.innerHTML=h;tip.style.display="block";
   var tx=mx+14,ty=my-16;
   if(tx+tip.offsetWidth>cw)tx=mx-tip.offsetWidth-10;
-  if(ty<0)ty=4; if(ty+tip.offsetHeight>ch)ty=ch-tip.offsetHeight-4;
-  tip.style.left=tx+"px"; tip.style.top=ty+"px";
+  if(ty<0)ty=4;if(ty+tip.offsetHeight>ch)ty=ch-tip.offsetHeight-4;
+  tip.style.left=tx+"px";tip.style.top=ty+"px";
   drawChart();
-  var px=PAD.l+xi/(YR.length-1)*pw;
-  ctx.strokeStyle="rgba(148,163,184,0.18)"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
-  ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,PAD.t+ph); ctx.stroke(); ctx.setLineDash([]);
+  var px=CPAD.l+xi/(YR.length-1)*pw;
+  ctx.strokeStyle="rgba(148,163,184,0.18)";ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(px,CPAD.t);ctx.lineTo(px,CPAD.t+ph);ctx.stroke();ctx.setLineDash([]);
   m.cs.forEach(function(c){
     var v=D[c][xi],isDim=hiC&&hiC!==c;
-    var py=PAD.t+ph-(v-m.yMin)/(m.yMax-m.yMin)*ph;
+    var py=CPAD.t+ph-(v-m.yMin)/(m.yMax-m.yMin)*ph;
     ctx.fillStyle=isDim?m.cm[c]+"28":m.cm[c];
-    ctx.beginPath(); ctx.arc(px,py,3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath();ctx.arc(px,py,3,0,Math.PI*2);ctx.fill();
   });
 }
 cv.addEventListener("mousemove",showTip);
@@ -399,26 +380,16 @@ cv.addEventListener("touchmove",function(e){e.preventDefault();showTip({clientX:
 cv.addEventListener("mouseleave",function(){tip.style.display="none";drawChart()});
 cv.addEventListener("touchend",function(){tip.style.display="none";drawChart()});
 
-/* ═══ SELECTOR PANEL ═══ */
+/* Selector */
 function buildSelector(){
   var t=II[lang];
-  /* Toggle button row */
   var tog=document.getElementById("seltog");
-  tog.innerHTML='<button class="b pri" id="selTogBtn">'+(!selOpen?("\u25BC "+t.selBtn):("\u25B2 "+t.hideBtn))+'</button><span class="sel-count">'+selected.length+t.selCount+'</span>';
+  tog.innerHTML='<button class="b pri" id="selTogBtn">'+(selOpen?"\u25B2 "+t.hideBtn:"\u25BC "+t.selBtn)+'</button><span class="sel-count">'+selected.length+t.selCount+'</span>';
   document.getElementById("selTogBtn").addEventListener("click",function(){selOpen=!selOpen;buildSelector()});
-
   var pan=document.getElementById("selpan");
   pan.className="sel-panel"+(selOpen?" open":"");
   if(!selOpen){pan.innerHTML="";return}
-
-  /* Group buttons */
-  var gHtml='<div class="grp-row" id="grpRow"></div>';
-  /* Clear all */
-  gHtml+='<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="b" id="clrBtn" style="font-size:10px;padding:3px 10px">'+t.clearAll+'</button></div>';
-  gHtml+='<div class="chk-grid" id="chkGrid"></div>';
-  pan.innerHTML=gHtml;
-
-  /* Group buttons */
+  pan.innerHTML='<div class="grp-row" id="grpRow"></div><div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="b" id="clrBtn" style="font-size:10px;padding:3px 10px">'+t.clearAll+'</button></div><div class="chk-grid" id="chkGrid"></div>';
   var gr=document.getElementById("grpRow");
   Object.keys(GROUPS).forEach(function(g){
     var btn=document.createElement("button");
@@ -426,40 +397,26 @@ function buildSelector(){
     btn.textContent=lang==="fr"?(GROUPS_FR[g]||g):g;
     btn.addEventListener("click",function(){
       activeGroup=(activeGroup===g)?null:g;
-      if(activeGroup){
-        if(g==="Top 10")selected=topN(10).slice();
-        else if(g==="Top 20")selected=topN(20).slice();
-        else selected=(GROUPS[g]||[]).slice();
-      }
-      hiC=null; refresh();
-    });
-    gr.appendChild(btn);
+      if(activeGroup){if(g==="Top 10")selected=topN(10).slice();else if(g==="Top 20")selected=topN(20).slice();else selected=(GROUPS[g]||[]).slice()}
+      hiC=null;refresh();
+    });gr.appendChild(btn);
   });
-
-  /* Clear button */
   document.getElementById("clrBtn").addEventListener("click",function(){selected=[];activeGroup=null;hiC=null;refresh()});
-
-  /* Checkboxes — sorted alphabetically by display name */
   var grid=document.getElementById("chkGrid");
   var sorted=AK.slice().sort(function(a,b){return dn(a).localeCompare(dn(b))});
   sorted.forEach(function(c){
     var label=document.createElement("label");
     label.className="chk-item"+(selected.indexOf(c)>=0?" hi":"");
-    var cb=document.createElement("input");
-    cb.type="checkbox"; cb.checked=selected.indexOf(c)>=0;
+    var cb=document.createElement("input");cb.type="checkbox";cb.checked=selected.indexOf(c)>=0;
     cb.addEventListener("change",function(){
       activeGroup=null;
-      if(cb.checked){if(selected.indexOf(c)<0)selected.push(c)}
-      else{var idx=selected.indexOf(c);if(idx>=0)selected.splice(idx,1)}
-      hiC=null; refresh();
+      if(cb.checked){if(selected.indexOf(c)<0)selected.push(c)}else{var idx=selected.indexOf(c);if(idx>=0)selected.splice(idx,1)}
+      hiC=null;refresh();
     });
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(" "+dn(c)));
-    grid.appendChild(label);
+    label.appendChild(cb);label.appendChild(document.createTextNode(" "+dn(c)));grid.appendChild(label);
   });
 }
 
-/* ═══ LEGEND ═══ */
 function buildLeg(){
   var cm=getColorMap(),el=document.getElementById("lgd");el.innerHTML="";
   selected.forEach(function(c){
@@ -471,73 +428,59 @@ function buildLeg(){
   });
 }
 
-/* ═══ LANG ═══ */
 function buildLang(){
-  var el=document.getElementById("lp"); el.innerHTML="";
+  var el=document.getElementById("lp");el.innerHTML="";
   ["EN","FR"].forEach(function(l){
-    var b=document.createElement("button");
-    b.textContent=l; b.className=(lang==="en"&&l==="EN")||(lang==="fr"&&l==="FR")?"on":"";
+    var b=document.createElement("button");b.textContent=l;
+    b.className=(lang==="en"&&l==="EN")||(lang==="fr"&&l==="FR")?"on":"";
     b.addEventListener("click",function(){lang=l==="EN"?"en":"fr";render()});
     el.appendChild(b);
   });
 }
 
-/* ═══ TABS ═══ */
+function switchTab(i){
+  activeTab=i;
+  ["p0","p1","p2","p3"].forEach(function(p,j){document.getElementById(p).className="panel"+(j===i?" show":"")});
+  buildTabs();
+  if(i===0)drawChart();
+  if(i===2)buildTable();
+}
+
 function buildTabs(){
   var t=II[lang],el=document.getElementById("tabs");el.innerHTML="";
-  var icons=["\ud83d\udcc8","\ud83d\udd0d","\ud83d\udcca","\u2139\ufe0f"];
-  var labels=t.tabs;
-  var panIds=["p0","p1","p2","p3"];
-  labels.forEach(function(label,i){
+  t.tabs.forEach(function(label,i){
     var b=document.createElement("button");
-    b.className="tab"+(activeTab===i?" on":"");
-    b.textContent=icons[i]+(label?" "+label:"");
-    b.addEventListener("click",function(){
-      activeTab=i;
-      panIds.forEach(function(p,j){document.getElementById(p).className="panel"+(j===i?" show":"")});
-      buildTabs();
-      if(i===0)drawChart();
-      if(i===2)buildTable();
-    });
+    b.className="tab"+(activeTab===i?" on":"");b.textContent=label;
+    b.addEventListener("click",function(){switchTab(i)});
     el.appendChild(b);
   });
 }
 
-/* ═══ ANALYSIS ═══ */
 function buildAnalysis(){
   var t=II[lang],el=document.getElementById("p1");
   var h="<h2 style='font-size:18px;font-weight:700;margin-bottom:16px'>"+t.at+"</h2>";
   t.a.forEach(function(x,i){h+='<div class="ai"><h3>'+(i+1)+". "+x[0]+"</h3><p>"+x[1]+"</p></div>"});
-  h+='<p class="an">'+t.an+"</p>";
-  el.innerHTML=h;
+  h+='<p class="an">'+t.an+"</p>";el.innerHTML=h;
 }
 
-/* ═══ DATA TABLE ═══ */
 var tblSort={col:20,asc:false};
 function buildTable(){
   var t=II[lang],el=document.getElementById("p2");
-  if(!selected.length){el.innerHTML="<p style='color:#64748b;padding:20px'>"+
-    (lang==="en"?"Select countries above to see data.":"S\u00e9lectionnez des pays ci-dessus.")+"</p>";return}
+  if(!selected.length){el.innerHTML="<p style='color:#64748b;padding:20px'>"+(lang==="en"?"Select countries above to see data.":"S\u00e9lectionnez des pays ci-dessus.")+"</p>";return}
   var rows=selected.slice();
   rows.sort(function(a,b){
     var va,vb;
     if(tblSort.col===-1){va=dn(a);vb=dn(b);return tblSort.asc?va.localeCompare(vb):vb.localeCompare(va)}
-    if(tblSort.col===-2){/* growth */
-      va=(D[a][20]-D[a][0])/D[a][0]*100; vb=(D[b][20]-D[b][0])/D[b][0]*100;
-    } else {va=D[a][tblSort.col];vb=D[b][tblSort.col]}
+    if(tblSort.col===-2){va=(D[a][20]-D[a][0])/D[a][0]*100;vb=(D[b][20]-D[b][0])/D[b][0]*100}
+    else{va=D[a][tblSort.col];vb=D[b][tblSort.col]}
     return tblSort.asc?va-vb:vb-va;
   });
-
-  var h='<div class="tbl-wrap"><table><thead><tr>';
-  /* Country col */
-  h+=thHtml(-1,t.tblCountry);
-  /* Year cols — show subset on mobile */
   var mob=window.innerWidth<640;
   var showYrs=mob?[0,4,8,12,16,20]:[0,2,4,6,8,10,12,14,16,18,20];
-  showYrs.forEach(function(i){h+=thHtml(i,YR[i])});
-  h+=thHtml(-2,t.tblGrowth);
-  h+="</tr></thead><tbody>";
-
+  var h='<div class="tbl-wrap"><table><thead><tr>';
+  h+=thH(-1,t.tblCountry);
+  showYrs.forEach(function(i){h+=thH(i,YR[i])});
+  h+=thH(-2,t.tblGrowth)+"</tr></thead><tbody>";
   rows.forEach(function(c){
     var cm=getColorMap();
     h+="<tr><td><span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:"+(cm[c]||"#475569")+";margin-right:6px;vertical-align:middle'></span>"+dn(c)+"</td>";
@@ -545,25 +488,20 @@ function buildTable(){
     var g=((D[c][20]-D[c][0])/D[c][0]*100);
     h+="<td style='color:"+(g>=0?"#2A9D8F":"#E63946")+"'>"+g.toFixed(1)+"%</td></tr>";
   });
-  h+="</tbody></table></div>";
-  el.innerHTML=h;
-
-  /* Sort click handlers */
+  h+="</tbody></table></div>";el.innerHTML=h;
   el.querySelectorAll("th").forEach(function(th){
     th.addEventListener("click",function(){
       var col=parseInt(th.getAttribute("data-col"));
-      if(tblSort.col===col)tblSort.asc=!tblSort.asc;
-      else{tblSort.col=col;tblSort.asc=col===-1}
+      if(tblSort.col===col)tblSort.asc=!tblSort.asc;else{tblSort.col=col;tblSort.asc=col===-1}
       buildTable();
     });
   });
 }
-function thHtml(col,label){
+function thH(col,label){
   var arrow=tblSort.col===col?(tblSort.asc?" <span class='arr'>\u25B2</span>":" <span class='arr'>\u25BC</span>"):"";
   return "<th data-col='"+col+"'>"+label+arrow+"</th>";
 }
 
-/* ═══ ABOUT ═══ */
 function buildAbout(){
   var t=II[lang],el=document.getElementById("p3");
   el.innerHTML="<p><strong>"+t.dl+" :</strong> "+t.dt+"</p>"+
@@ -571,7 +509,6 @@ function buildAbout(){
     "<p class='src' style='margin-top:6px;font-style:italic'>"+t.sn+"</p>";
 }
 
-/* ═══ RENDER ═══ */
 function render(){
   var t=II[lang];
   document.getElementById("pt").innerHTML=t.t+"<span>"+t.ts+"</span>";
@@ -579,18 +516,11 @@ function render(){
   document.getElementById("lht").textContent=t.lh;
   document.getElementById("ftr").innerHTML="<p>"+t.bw+"</p><p style='margin-top:3px'>\u00a9 "+new Date().getFullYear()+" Corey Prator</p>";
   document.documentElement.lang=lang;
-  buildLang(); buildSelector(); drawChart(); buildLeg();
-  buildTabs(); buildAnalysis(); buildTable(); buildAbout();
+  buildLang();buildTabs();buildSelector();drawChart();buildLeg();buildAnalysis();buildTable();buildAbout();
 }
 
-function refresh(){
-  buildSelector(); drawChart(); buildLeg();
-  /* rebuild table if visible */
-  if(activeTab===2)buildTable();
-  /* update count */
-  var t=II[lang];
-  var cnt=document.querySelector(".sel-count");
-  if(cnt)cnt.textContent=selected.length+t.selCount;
+function refresh(){buildSelector();drawChart();buildLeg();if(activeTab===2)buildTable();
+  var t=II[lang];var cnt=document.querySelector(".sel-count");if(cnt)cnt.textContent=selected.length+t.selCount;
 }
 
 window.addEventListener("load",render);
